@@ -21,7 +21,7 @@ The database check opens one transaction-scoped `AsyncSession`, runs
 
 - `mcd_ua_idw.config` validates and loads `DATABASE_URL` from the environment
   or `.env`.
-- `mcd_ua_idw.db.base` owns the declarative `Base` and metadata conventions.
+- `mcd_ua_idw.db` owns the declarative `Base` and metadata conventions.
 - `mcd_ua_idw.db.session` owns engine and session-factory construction.
 - `mcd_ua_idw.db.models` is the import registry for mapped classes. Import new
   model modules there so Alembic can discover their metadata.

@@ -1,9 +1,10 @@
 """Declarative ORM base and shared metadata."""
 
-from sqlalchemy import MetaData
-from sqlalchemy.ext.asyncio import AsyncAttrs
-from sqlalchemy.orm import DeclarativeBase
+from datetime import datetime
 
+from sqlalchemy import Integer, MetaData, func
+from sqlalchemy.ext.asyncio import AsyncAttrs
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 NAMING_CONVENTION = {
     "ix": "ix_%(column_0_label)s",
@@ -14,7 +15,10 @@ NAMING_CONVENTION = {
 }
 
 
-class Base(AsyncAttrs, DeclarativeBase):
+class Base(DeclarativeBase):
     """Base class for all application ORM models."""
 
     metadata = MetaData(naming_convention=NAMING_CONVENTION)
+
+    id = mapped_column(Integer, primary_key=True)
+    create_date: Mapped[datetime] = mapped_column(insert_default=func.now())
