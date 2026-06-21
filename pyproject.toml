@@ -6,6 +6,8 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.14,<2",
+    "alembic-postgresql-enum>=1.10.0",
+    "alembic-utils>=0.8.8",
     "black>=26.5.1",
     "psycopg[binary]>=3.2,<4",
     "pydantic-settings>=2,<3",

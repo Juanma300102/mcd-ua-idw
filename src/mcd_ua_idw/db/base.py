@@ -18,7 +18,7 @@ NAMING_CONVENTION = {
 class Base(DeclarativeBase):
     """Base class for all application ORM models."""
 
-    metadata = MetaData(naming_convention=NAMING_CONVENTION)
+    #  metadata = MetaData(naming_convention=NAMING_CONVENTION)
 
-    id = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
     create_date: Mapped[datetime] = mapped_column(insert_default=func.now())
