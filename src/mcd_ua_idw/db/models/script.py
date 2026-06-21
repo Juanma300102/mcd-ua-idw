@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, String
+from sqlalchemy import Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import TYPE_CHECKING
 
@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 
 class Script(Base):
     __tablename__ = "Scripts"
+    __table_args__ = (UniqueConstraint("name", name="uq_Scripts_name"),)
 
     name: Mapped[str] = mapped_column(String())
 

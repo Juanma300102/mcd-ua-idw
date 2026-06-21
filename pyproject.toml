@@ -12,10 +12,13 @@ dependencies = [
     "psycopg[binary]>=3.2,<4",
     "pydantic-settings>=2,<3",
     "sqlalchemy>=2.0,<3",
+    "textual[syntax]>=8.2.7",
+    "textual-dev>=1.8.0",
 ]
 
 [project.scripts]
 db-check = "mcd_ua_idw.scripts.db_check:main"
+idw-scripts = "mcd_ua_idw.script_runner.tui:main"
 
 [build-system]
 requires = ["hatchling"]
