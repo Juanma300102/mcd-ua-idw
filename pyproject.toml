@@ -9,6 +9,7 @@ dependencies = [
     "alembic-postgresql-enum>=1.10.0",
     "alembic-utils>=0.8.8",
     "black>=26.5.1",
+    "greenlet>=3,<4",
     "psycopg[binary]>=3.2,<4",
     "pydantic-settings>=2,<3",
     "sqlalchemy>=2.0,<3",
