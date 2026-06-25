@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from mcd_ua_idw.scripts.db_check import check_database
+from mcd_ua_idw.scripts.util_db_check import check_database
 
 
 @pytest.mark.asyncio

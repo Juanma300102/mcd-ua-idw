@@ -93,20 +93,28 @@ no asumir nada sobre el orden visual de la lista). Por eso, quien vaya a
 ejecutar scripts tiene que guiarse por este checklist y no por lo que
 muestra la pantalla.
 
-**Orden actual (al día de hoy, 1 script existente):**
+**Orden actual (verificado 2026-06-23, Etapa 1 completa):**
 
-1. `crear_tablas_dqm` — debe correrse primero, una sola vez. Es
-   prerequisito de cualquier otro script de Etapa 1: los controles de
-   calidad y las huellas de transformación que vienen después escriben en
-   `dqm_eventos` / `dqm_validaciones` / `dqm_perfilado`, que tienen que
-   existir antes.
+ 1. `e0_p01_crear_tablas_dqm` — prerequisito absoluto; crea las 3 tablas DQM
+ 2. `e1_p01_crear_tablas_txt_sin_deps`
+ 3. `e1_p02_crear_tablas_tmp_sin_deps`
+ 4. `e1_p03_cargar_txt_sin_deps`
+ 5. `e1_p04_validar_tipos_sin_deps` — TP-3d + TP-3e (5 tablas sin deps)
+ 6. `e1_p05_perfilar_sin_deps` — TP-3f
+ 7. `e1_p06_cargar_tmp_sin_deps` — TP-3g; se bloquea si p04 tiene ERRORs
+ 8. `e1_p07_crear_tablas_txt_con_deps`
+ 9. `e1_p08_crear_tablas_tmp_con_deps`
+10. `e1_p09_cargar_txt_con_deps`
+11. `e1_p10_validar_tipos_con_deps` — TP-3d + TP-3e (6 tablas con deps)
+12. `e1_p11_perfilar_con_deps` — TP-3f
+13. `e1_p12_cargar_tmp_con_deps` — TP-3g; se bloquea si p10 tiene ERRORs
+14. `e1_p13_validar_integridad_ref` — TP-3h; solo después de p12
 
-**Criterio para cuando se agreguen los scripts de la Etapa 1 (loop de las
-11 tablas):** el orden de ejecución debe espejar el orden de dependencias
-FK ya documentado en "Orden de carga — 11 tablas de Ingesta 1" (más abajo
-en este documento) — primero las tablas sin dependencias, después las que
-dependen de ellas. Actualizar esta lista cada vez que se sume un script,
-no dejarlo en la cabeza de quien lo escribió.
+Utilidades (sin orden de dependencia, ejecutar cuando se necesiten):
+- `util_db_check`
+- `util_dummy`
+
+Actualizar esta lista cada vez que se sume un script.
 
 ---
 
@@ -139,7 +147,7 @@ distinta.
 para no atar estas tablas a un esquema de tracking no confirmado en
 detalle. Se puede agregar la FK real más adelante con `ALTER TABLE`.
 
-DDL completo en `src/mcd_ua_idw/scripts/crear_tablas_dqm.sql`. Tablas
+DDL completo en `src/mcd_ua_idw/scripts/e0_p01_crear_tablas_dqm.sql`. Tablas
 creadas y verificadas en la base de desarrollo.
 
 ---
@@ -162,7 +170,7 @@ creadas y verificadas en la base de desarrollo.
 
 ---
 
-## Estado actual del repo (verificado 2026-06-22)
+## Estado actual del repo (verificado 2026-06-23)
 
 | Componente | Estado |
 |---|---|
@@ -173,7 +181,11 @@ creadas y verificadas en la base de desarrollo.
 | Tablas DQM (creación física) | **Creadas y verificadas** en Postgres |
 | `run_sql_file` | **Existe** en `script_runner/sql_utils.py`, verificado funcionando end-to-end |
 | `track_decorator.py` | Stub vacío — decisión pendiente (ver TODO abajo) |
-| CSVs / tablas Northwind | No cargados en el repo todavía |
+| `TXT_` — 11 tablas Ingesta 1 | **Creadas y cargadas** (e1_p01/p03/p07/p09) |
+| `TMP_` — 11 tablas Ingesta 1 | **Creadas y cargadas** con CASTs (e1_p02/p06/p08/p12) |
+| Validaciones DQM (TP-3d/3e) | **Completas** — 65 checks, todos OK (e1_p04/p10) |
+| Perfilado DQM (TP-3f) | **Completo** — 83 columnas perfiladas (e1_p05/p11) |
+| Integridad referencial (TP-3h) | **Completa** — 11 FKs, ningún huérfano (e1_p13) |
 
 > Nota: la migración `9ea5f62ecfe7` se llama "dqm_tracking_models" pero crea las tablas de tracking (`Scripts`, `ScriptVersions`, `ScriptRuns`), no las de calidad de datos.
 
@@ -181,8 +193,8 @@ creadas y verificadas en la base de desarrollo.
 
 ## TODO — decisiones pendientes (no tomar sin acuerdo de equipo)
 
-- [ ] Prefijos de capa: confirmar cuáles usar (`TXT_`, `TMP_`, `ING_`, `DWA_`, `DQM_`, `DWM_`, `MET_`, `DPxx_`).
-- [ ] Formato de encabezado estándar para cada script SQL (nombre / descripción / fecha / autor / versión).
+- [x] Prefijos de capa: confirmados y documentados en `docs/decisiones_de_diseno.md`.
+- [x] Formato de encabezado estándar para scripts SQL: `Nombre / Descripcion / Fecha / Autor / Version` — aplicado en todos los `.sql` de Etapa 1.
 - [ ] `track_decorator.py`: borrar o implementar.
 - [ ] Agregar `docs/TP_Consigna.pdf` y to-do de Etapa 1 al repo.
 - [ ] Agregar columnas `descripcion` y `autor` a `Scripts`/`ScriptVersions` (migración Alembic chica).

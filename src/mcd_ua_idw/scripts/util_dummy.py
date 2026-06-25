@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Any
 
-NAME = "Dummy script to test TUI app"  # optional; TUI display label
+NAME = "util_dummy"
 VERSION = 1  # required; positive integer
 
 

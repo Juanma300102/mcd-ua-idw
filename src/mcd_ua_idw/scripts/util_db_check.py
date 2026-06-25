@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from mcd_ua_idw.db import dispose_engine, get_session_factory
 
-NAME = "Database connectivity check"
+NAME = "util_db_check"
 VERSION = 1
 
 

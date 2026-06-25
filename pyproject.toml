@@ -18,7 +18,7 @@ dependencies = [
 ]
 
 [project.scripts]
-db-check = "mcd_ua_idw.scripts.db_check:main"
+db-check = "mcd_ua_idw.scripts.util_db_check:main"
 idw-scripts = "mcd_ua_idw.script_runner.tui:main"
 
 [build-system]
