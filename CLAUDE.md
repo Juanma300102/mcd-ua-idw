@@ -93,7 +93,7 @@ no asumir nada sobre el orden visual de la lista). Por eso, quien vaya a
 ejecutar scripts tiene que guiarse por este checklist y no por lo que
 muestra la pantalla.
 
-**Orden actual (verificado 2026-06-23, Etapa 1 completa):**
+**Orden actual (verificado 2026-06-28, Etapa 1 completa + Etapa 2 ejecutada):**
 
  1. `e0_p01_crear_tablas_dqm` — prerequisito absoluto; crea las 3 tablas DQM
  2. `e1_p01_crear_tablas_txt_sin_deps`
@@ -109,6 +109,12 @@ muestra la pantalla.
 12. `e1_p11_perfilar_con_deps` — TP-3f
 13. `e1_p12_cargar_tmp_con_deps` — TP-3g; se bloquea si p10 tiene ERRORs
 14. `e1_p13_validar_integridad_ref` — TP-3h; solo después de p12
+15. `e2_p01_crear_tablas_metadata` — TP-5; crea soporte `MET_*`
+16. `e2_p02_documentar_metadata_inicial` — TP-5/6/7; documenta Metadata base, DQM y modelo DWA propuesto
+17. `e2_p03_crear_modelo_dwa` — TP-6/7; crea DWA, DWM y enriquecimiento inicial
+18. `e2_p04_validar_carga_dwa` — TP-8a/8b; valida calidad/integración antes de cargar DWA
+19. `e2_p05_cargar_dwa_inicial` — TP-8c; carga DWA inicial desde TMP validada
+20. `e2_p06_perfilar_dwa` — TP-7/8; perfila tablas DWA/DWM/enriquecimiento cargadas
 
 Utilidades (sin orden de dependencia, ejecutar cuando se necesiten):
 - `util_db_check`
@@ -186,6 +192,8 @@ creadas y verificadas en la base de desarrollo.
 | Validaciones DQM (TP-3d/3e) | **Completas** — 65 checks, todos OK (e1_p04/p10) |
 | Perfilado DQM (TP-3f) | **Completo** — 83 columnas perfiladas (e1_p05/p11) |
 | Integridad referencial (TP-3h) | **Completa** — 11 FKs, ningún huérfano (e1_p13) |
+| Metadata Etapa 2 (TP-5) | **Scripts creados; usuario reportó ejecución manual 2026-06-28** — `met_entidades`, `met_atributos`, `met_procesos`, `met_indicadores_calidad` (e2_p01/e2_p02). Re-ejecutar e2_p02 si se quiere refrescar Metadata con ajustes posteriores. |
+| Diseño DWA Etapa 2 (TP-6/7/8) | **Scripts creados, re-ejecutados manualmente y verificados 2026-06-28 21:35 UTC** — e2_p03 crea DWA/DWM/enriquecimiento con `dwa_dim_geography` y stock de producto; e2_p04 tiene 16 validaciones OK; e2_p05 conteo fact OK; e2_p06 perfila geografía + stock. Verificación: `dwa_dim_geography=102`, `dwa_fact_order_lines=2155`, `dwa_enr_customer_sales_metrics=89`, `dwa_enr_product_sales_metrics=77`. |
 
 > Nota: la migración `9ea5f62ecfe7` se llama "dqm_tracking_models" pero crea las tablas de tracking (`Scripts`, `ScriptVersions`, `ScriptRuns`), no las de calidad de datos.
 
@@ -198,6 +206,8 @@ creadas y verificadas en la base de desarrollo.
 - [ ] `track_decorator.py`: borrar o implementar.
 - [ ] Agregar `docs/TP_Consigna.pdf` y to-do de Etapa 1 al repo.
 - [ ] Agregar columnas `descripcion` y `autor` a `Scripts`/`ScriptVersions` (migración Alembic chica).
+- [x] Confirmar decisión sobre `freight` en DWA: se conserva como `order_freight_amount` no aditivo en el hecho de líneas; no se prorratea en Etapa 2.
+- [x] Confirmar si dimensión geográfica se crea en Etapa 2 o espera a Ingesta2/Etapa 3 con `world-data-2023.csv`: se crea geografía básica con Ingesta 1 en Etapa 2; `world-data-2023.csv` queda como enriquecimiento externo de Etapa 3.
 
 ---
 

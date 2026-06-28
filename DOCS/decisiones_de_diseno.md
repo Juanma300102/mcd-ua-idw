@@ -163,3 +163,130 @@ con `e1_p13_validar_integridad_ref` (tipo `FK_INTEGRIDAD` en `dqm_validaciones`)
 | `discount` | NUMERIC | `0`, `0.05`, `0.15` … (incluye entero `0` sin punto decimal) |
 
 La regex de FORMATO_NUMERICO (`^\d+(\.\d+)?$`) cubre tanto `0` como `0.05`. ✓
+
+---
+
+## Etapa 2 — Ingeniería
+
+### Soporte de Metadata
+
+Se crea una capa `MET_` con cuatro tablas iniciales:
+
+| Tabla | Grano |
+|---|---|
+| `met_entidades` | 1 fila por entidad documentada |
+| `met_atributos` | 1 fila por atributo de entidad |
+| `met_procesos` | 1 fila por script/proceso del flujo DWA |
+| `met_indicadores_calidad` | 1 fila por regla/indicador de calidad |
+
+**Decisión**: la Metadata documenta tanto entidades físicas ya creadas como entidades planificadas del DWA. Esto permite cumplir la consigna de documentar el diseño antes de ejecutar DDL de DWA.
+
+### Modelo dimensional inicial
+
+El DWA inicial se diseña como modelo estrella de ventas con grano de línea de orden:
+
+- Hecho principal: `dwa_fact_order_lines`, 1 fila por (`order_id`, `product_id`).
+- Dimensiones iniciales: `dwa_dim_date`, `dwa_dim_customer`, `dwa_dim_product`, `dwa_dim_employee`, `dwa_dim_shipper`.
+- Medidas derivadas: `gross_amount`, `discount_amount`, `net_amount`.
+
+**Motivo**: el detalle de línea de orden es el grano más bajo disponible y permite agregaciones posteriores por cliente, producto, empleado, transportista y tiempo sin perder información.
+
+### Capa de Memoria
+
+Se crean entidades de memoria planificadas para los atributos que probablemente cambien en Ingesta2:
+
+- `dwm_customer_history`
+- `dwm_product_history`
+
+**Decisión**: usar formato tipo SCD2 con vigencia (`vigente_desde`, `vigente_hasta`, `es_vigente`) cuando se implemente el DDL. En carga inicial habrá una única versión vigente por entidad natural.
+
+### Capa de Enriquecimiento
+
+El enriquecimiento se modela dentro del espacio DWA con prefijo `dwa_enr_*` porque la consigna no define un prefijo separado para enriquecimiento.
+
+Entidades iniciales planificadas:
+
+- `dwa_enr_customer_sales_metrics`
+- `dwa_enr_product_sales_metrics`
+
+**Motivo**: son datos derivados del hecho DWA, útiles para productos de datos posteriores, no datos fuente ni staging.
+
+**Referencia de apoyo**: el ejemplo anterior en
+`DOCS/TP anteriores de ejemplo/ejemplo/TP DWA informe ejemplo.pdf`, sección
+4.1 "Métricas Calculadas Implementadas" (página 5 del PDF), describe que la
+capa DWA agrega métricas derivadas para reducir procesamiento en consultas y
+soportar BI. La sección 9.2 (página 8) también recomienda documentar fórmulas
+exactas de métricas calculadas en Metadata. Se usa solo como referencia de
+formato/enfoque, no como fuente de verdad del TP actual.
+
+### Métricas de ventas por cliente
+
+**Decisión**: `dwa_enr_customer_sales_metrics` contiene solo clientes con al
+menos una venta/orden.
+
+**Motivo**: la entidad es un enriquecimiento de ventas, no una extensión de la
+dimensión completa de clientes. Los clientes sin ventas quedan representados en
+`dwa_dim_customer`, pero no se insertan con métricas en cero en esta tabla.
+
+**Referencia de origen de la discusión**: la decisión surgió después de revisar
+el ejemplo anterior citado arriba y de verificar la carga local de Etapa 2
+(`91` clientes en `dwa_dim_customer` contra `89` clientes con ventas en
+`dwa_enr_customer_sales_metrics`). El ejemplo apoya el uso de métricas derivadas
+para BI, pero el alcance "solo clientes con ventas" es una decisión propia del
+equipo para este TP.
+
+### DQM para Etapa 2
+
+Se reutilizan las tablas DQM existentes (`dqm_eventos`, `dqm_validaciones`, `dqm_perfilado`).
+
+**Decisión**: no crear nuevas tablas DQM para Etapa 2 por ahora. El diseño de tres granos ya cubre eventos de carga DWA, validaciones de integración y perfilado dimensional. La Metadata (`met_indicadores_calidad`) registra qué indicadores y umbrales aplican.
+
+### `freight` en el hecho
+
+`freight` pertenece a la cabecera de orden y no a cada línea.
+
+**Decisión**: conservarlo en `dwa_fact_order_lines` como `order_freight_amount`, un atributo no aditivo de cabecera repetido por línea solo para navegación.
+
+**Motivo**: no hay una regla de negocio acordada para prorratear flete entre líneas, y crear un segundo hecho de orden agrega complejidad que no es necesaria para la carga inicial de Etapa 2.
+
+**Regla de uso**: no sumar `order_freight_amount` directamente a grano línea. Para análisis de flete, agrupar/deduplicar primero por `order_id` o esperar un producto de datos específico.
+
+### Dimensión geográfica
+
+**Decisión**: crear una dimensión geográfica básica en Etapa 2 con datos de
+Ingesta 1.
+
+**Alcance**: `dwa_dim_geography` consolida combinaciones de
+`country`/`region`/`city`/`postal_code` provenientes de clientes, empleados y
+direcciones de envío de órdenes. En Etapa 2 no se agregan atributos externos de
+`world-data-2023.csv`; ese enriquecimiento queda para Etapa 3.
+
+**Motivo**: el ejemplo anterior prioriza análisis geográfico, y el equipo
+decidió que Ingesta 1 ya contiene datos suficientes para soportar navegación
+geográfica básica del DWA sin esperar a Ingesta 2.
+
+### Stock en producto
+
+**Decisión**: promover atributos de stock de `tmp_products` al DWA inicial.
+
+**Alcance**: `dwa_dim_product` y `dwm_product_history` incluyen
+`units_in_stock`, `units_on_order`, `reorder_level` y un indicador derivado
+`stock_alarm_level` (`0` normal, `1` bajo/reorden, `2` agotado).
+
+**Motivo**: el ejemplo anterior usa stock crítico como producto analítico, y los
+campos necesarios ya están disponibles en Ingesta 1. No se agregan por ahora
+shipping-delay metrics, dimensión detallada de proveedor ni antigüedad de
+empleado.
+
+### DWA físico inicial
+
+El script `e2_p03_crear_modelo_dwa` crea el modelo físico inicial:
+
+- Dimensiones: `dwa_dim_date`, `dwa_dim_geography`, `dwa_dim_customer`, `dwa_dim_product`, `dwa_dim_employee`, `dwa_dim_shipper`.
+- Hecho: `dwa_fact_order_lines`.
+- Memoria: `dwm_customer_history`, `dwm_product_history`.
+- Enriquecimiento: `dwa_enr_customer_sales_metrics`, `dwa_enr_product_sales_metrics`.
+
+**Decisión**: usar claves surrogate `GENERATED ALWAYS AS IDENTITY` en dimensiones/hecho y conservar claves naturales (`customer_id`, `product_id`, etc.) con `UNIQUE` para trazabilidad hacia TMP.
+
+**Motivo**: separa identificadores analíticos de claves fuente y deja preparada la evolución SCD2 de Memoria en Etapa 3.
