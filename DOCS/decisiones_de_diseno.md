@@ -290,3 +290,53 @@ El script `e2_p03_crear_modelo_dwa` crea el modelo físico inicial:
 **Decisión**: usar claves surrogate `GENERATED ALWAYS AS IDENTITY` en dimensiones/hecho y conservar claves naturales (`customer_id`, `product_id`, etc.) con `UNIQUE` para trazabilidad hacia TMP.
 
 **Motivo**: separa identificadores analíticos de claves fuente y deja preparada la evolución SCD2 de Memoria en Etapa 3.
+
+---
+
+## Etapa 3 — Actualización
+
+### D1 — Corrección de `customerID = "XXXXX"` en orden 11078 de Ingesta2
+
+El archivo `data/ingesta2/orders - novedades.csv` tiene la orden 11078 con `customerID = "XXXXX"`.
+La dirección de envío (`ship_name = "Old World Delicatessen"`, `ship_address = "2743 Bering St., Anchorage, AK"`) coincide exactamente con el cliente `OLDWO` de Ingesta1.
+
+**Decisión**: corregir el CSV manualmente reemplazando `XXXXX` por `OLDWO`. Documentado en el informe como ejemplo de corrección de error de datos (TP-9e).
+
+**Alternativa descartada**: procesar la orden con FK inválida y excluirla del DWA. Descartada porque la consigna (TP-9e) habilita explícitamente corregir el CSV cuando hay un error, y la corrección es inequívoca.
+
+### D2 — Columnas de `world-data-2023.csv` incorporadas a `dwa_dim_geography`
+
+Del CSV de 35 columnas, se incorporan 6 atributos relevantes para análisis de ventas:
+
+| Columna en world-data | Columna en dwa_dim_geography | Justificación |
+|---|---|---|
+| `Abbreviation` | `country_iso_code` | Código ISO 2 letras, útil para geo-visualización |
+| `Capital/Major City` | `country_capital` | Contexto geográfico del país |
+| `Official language` | `country_language` | Navegación por mercado lingüístico |
+| `Currency-Code` | `country_currency` | Análisis de moneda por región de venta |
+| `Latitude` | `country_latitude` | Coordenadas para mapas en tableros |
+| `Longitude` | `country_longitude` | Coordenadas para mapas en tableros |
+
+**Alternativa descartada**: incorporar atributos macroeconómicos (GDP, CPI, Birth Rate, etc.). Descartada porque no tienen relación directa con el análisis de ventas de Northwind.
+
+**Mapeo de nombres de país** — 3 países de Ingesta1 no matchean directamente con los nombres en world-data:
+
+| Nombre en DWA | Nombre en world-data-2023 |
+|---|---|
+| `UK` | `United Kingdom` |
+| `USA` | `United States` |
+| `Ireland` | `Republic of Ireland` |
+
+El script `e3_p11_integrar_world_data` aplica este mapeo con un diccionario explícito `_PAIS_MAP`. El valor `MX` es un error previo de Ingesta1 (ya existe como `Mexico` en `dwa_dim_geography` correctamente).
+
+### D3 — `customer_score`: tabla `dwa_enr_customer_score` separada
+
+83 de 91 clientes tienen score en `customers_score.csv`. 8 clientes no tienen score.
+
+**Decisión**: crear tabla separada `dwa_enr_customer_score` con FK a `dwa_dim_customer`, siguiendo el patrón `dwa_enr_*` existente. No se agrega como columna nullable a `dwa_dim_customer`.
+
+Columnas: `customer_key (FK)`, `customer_id`, `score (INTEGER)`, `fecha_carga`.
+
+**Motivo**: el score es un dato derivado/externo, no un atributo de identidad del cliente. Agregar una columna nullable a la dimensión agrega 8 NULLs estructuralmente y rompe la separación de concerns. El patrón `dwa_enr_*` ya existe en el modelo con el mismo criterio.
+
+**Alternativa descartada**: columna `customer_score INTEGER` en `dwa_dim_customer`. Descartada porque genera NULLs en la dimensión para clientes sin score y mezcla datos de identidad con datos de enriquecimiento externo.

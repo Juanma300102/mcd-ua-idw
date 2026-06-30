@@ -93,7 +93,7 @@ no asumir nada sobre el orden visual de la lista). Por eso, quien vaya a
 ejecutar scripts tiene que guiarse por este checklist y no por lo que
 muestra la pantalla.
 
-**Orden actual (verificado 2026-06-28, Etapa 1 completa + Etapa 2 ejecutada):**
+**Orden actual (Etapa 1 y 2 completas + Etapa 3 scripts escritos, pendiente ejecución 2026-06-29):**
 
  1. `e0_p01_crear_tablas_dqm` — prerequisito absoluto; crea las 3 tablas DQM
  2. `e1_p01_crear_tablas_txt_sin_deps`
@@ -115,6 +115,18 @@ muestra la pantalla.
 18. `e2_p04_validar_carga_dwa` — TP-8a/8b; valida calidad/integración antes de cargar DWA
 19. `e2_p05_cargar_dwa_inicial` — TP-8c; carga DWA inicial desde TMP validada
 20. `e2_p06_perfilar_dwa` — TP-7/8; perfila tablas DWA/DWM/enriquecimiento cargadas
+21. `e3_p01_crear_tablas_txt_ingesta2` — TP-9a; crea TXT_nov para 4 tablas de Ingesta2
+22. `e3_p02_crear_tablas_tmp_ingesta2` — TP-9a; crea TMP_nov con tipos del DER
+23. `e3_p03_cargar_txt_ingesta2` — TP-9a; carga CSVs Ingesta2 → TXT_nov (customers usa `,` no `;`)
+24. `e3_p04_validar_tipos_ingesta2` — TP-9b; validaciones formato/PK en TXT_nov
+25. `e3_p05_perfilar_ingesta2` — TP-9b; perfilado descriptivo TXT_nov
+26. `e3_p06_cargar_tmp_ingesta2` — TP-9b; TXT_nov → TMP_nov; se bloquea si p04 tiene ERRORs
+27. `e3_p07_validar_integridad_ingesta2` — TP-9b; FK checks TMP_nov vs TMP_ Ingesta1; solo después de corregir XXXXX→OLDWO
+28. `e3_p08_actualizar_dwa` — TP-9c/f; SCD2 customers/products + INSERT nuevas órdenes; bloquea si p07 tiene ERRORs
+29. `e3_p09_actualizar_enriquecimiento` — TP-9g; recalcula dwa_enr_* post-Ingesta2
+30. `e3_p10_actualizar_dqm_metadata` — TP-9i/9j; registra procesos Etapa 3 en MET_
+31. `e3_p11_integrar_world_data` — TP-10; enriquece dwa_dim_geography con 6 atributos de país
+32. `e3_p12_integrar_customer_score` — TP-11; crea dwa_enr_customer_score con 83 scores
 
 Utilidades (sin orden de dependencia, ejecutar cuando se necesiten):
 - `util_db_check`
@@ -176,7 +188,7 @@ creadas y verificadas en la base de desarrollo.
 
 ---
 
-## Estado actual del repo (verificado 2026-06-23)
+## Estado actual del repo (actualizado 2026-06-29)
 
 | Componente | Estado |
 |---|---|
@@ -194,6 +206,7 @@ creadas y verificadas en la base de desarrollo.
 | Integridad referencial (TP-3h) | **Completa** — 11 FKs, ningún huérfano (e1_p13) |
 | Metadata Etapa 2 (TP-5) | **Scripts creados; usuario reportó ejecución manual 2026-06-28** — `met_entidades`, `met_atributos`, `met_procesos`, `met_indicadores_calidad` (e2_p01/e2_p02). Re-ejecutar e2_p02 si se quiere refrescar Metadata con ajustes posteriores. |
 | Diseño DWA Etapa 2 (TP-6/7/8) | **Scripts creados, re-ejecutados manualmente y verificados 2026-06-28 21:35 UTC** — e2_p03 crea DWA/DWM/enriquecimiento con `dwa_dim_geography` y stock de producto; e2_p04 tiene 16 validaciones OK; e2_p05 conteo fact OK; e2_p06 perfila geografía + stock. Verificación: `dwa_dim_geography=102`, `dwa_fact_order_lines=2155`, `dwa_enr_customer_sales_metrics=89`, `dwa_enr_product_sales_metrics=77`. |
+| Etapa 3 (TP-9/10/11) | **Scripts creados 2026-06-29; pendiente ejecución manual** — e3_p01 a e3_p12. CSV corregido (`XXXXX→OLDWO`). Ver orden de ejecución arriba. Verificación esperada: `dwa_fact_order_lines>2155`, `dwm_customer_history (es_vigente=false)=2`, `dwm_product_history (es_vigente=false)=3`, `dwa_enr_customer_score=83`. |
 
 > Nota: la migración `9ea5f62ecfe7` se llama "dqm_tracking_models" pero crea las tablas de tracking (`Scripts`, `ScriptVersions`, `ScriptRuns`), no las de calidad de datos.
 
