@@ -297,10 +297,21 @@ El script `e2_p03_crear_modelo_dwa` crea el modelo físico inicial:
 
 ### D1 — Corrección de `customerID = "XXXXX"` en orden 11078 de Ingesta2
 
-El archivo `data/ingesta2/orders - novedades.csv` tiene la orden 11078 con `customerID = "XXXXX"`.
+El archivo original `data/ingesta2/orders - novedades.csv` traía la orden 11078 con `customerID = "XXXXX"`.
 La dirección de envío (`ship_name = "Old World Delicatessen"`, `ship_address = "2743 Bering St., Anchorage, AK"`) coincide exactamente con el cliente `OLDWO` de Ingesta1.
 
 **Decisión**: corregir el CSV manualmente reemplazando `XXXXX` por `OLDWO`. Documentado en el informe como ejemplo de corrección de error de datos (TP-9e).
+
+**Estado aplicado**: la copia versionada en el repo quedó corregida. La fila actual
+de `data/ingesta2/orders - novedades.csv` empieza con:
+
+```csv
+11078,OLDWO,2,1998-01-01 00:00:00.000,...
+```
+
+Después de aplicar la corrección y ejecutar Etapa 3, `e3_p07_validar_integridad_ingesta2`
+registró 7 chequeos FK OK con 0 errores, y `e3_p08_actualizar_dwa` cargó 14 líneas
+nuevas de hecho.
 
 **Alternativa descartada**: procesar la orden con FK inválida y excluirla del DWA. Descartada porque la consigna (TP-9e) habilita explícitamente corregir el CSV cuando hay un error, y la corrección es inequívoca.
 
@@ -326,8 +337,17 @@ Del CSV de 35 columnas, se incorporan 6 atributos relevantes para análisis de v
 | `UK` | `United Kingdom` |
 | `USA` | `United States` |
 | `Ireland` | `Republic of Ireland` |
+| `MX` | `Mexico` |
 
-El script `e3_p11_integrar_world_data` aplica este mapeo con un diccionario explícito `_PAIS_MAP`. El valor `MX` es un error previo de Ingesta1 (ya existe como `Mexico` en `dwa_dim_geography` correctamente).
+El script `e3_p11_integrar_world_data` aplica este mapeo con un diccionario explícito `_PAIS_MAP`.
+Para `Ireland`, `world-data-2023.csv` trae los atributos de país pero deja vacío
+`Abbreviation`; se registra `IE` como fallback documentado para poder usar mapas
+en tableros.
+
+**Cambio aplicado 2026-07-02**: `src/mcd_ua_idw/scripts/e3_p11_integrar_world_data.py`
+incorpora `MX → Mexico` en `_PAIS_MAP` y `_ISO_FALLBACK = {"Ireland": "IE"}`.
+Con esto, una re-ejecución manual de `e3_p11` completa los atributos geográficos
+de México y deja código ISO para Irlanda aun cuando el CSV externo lo trae vacío.
 
 ### D3 — `customer_score`: tabla `dwa_enr_customer_score` separada
 

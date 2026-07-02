@@ -125,7 +125,7 @@ muestra la pantalla.
 28. `e3_p08_actualizar_dwa` — TP-9c/f; SCD2 customers/products + INSERT nuevas órdenes; bloquea si p07 tiene ERRORs
 29. `e3_p09_actualizar_enriquecimiento` — TP-9g; recalcula dwa_enr_* post-Ingesta2
 30. `e3_p10_actualizar_dqm_metadata` — TP-9i/9j; registra procesos Etapa 3 en MET_
-31. `e3_p11_integrar_world_data` — TP-10; enriquece dwa_dim_geography con 6 atributos de país
+31. `e3_p11_integrar_world_data` — TP-10; enriquece dwa_dim_geography con 6 atributos de país. Re-ejecutar una vez para aplicar mapeo final `MX→Mexico` e ISO fallback `Ireland→IE`.
 32. `e3_p12_integrar_customer_score` — TP-11; crea dwa_enr_customer_score con 83 scores
 
 Utilidades (sin orden de dependencia, ejecutar cuando se necesiten):
@@ -188,7 +188,7 @@ creadas y verificadas en la base de desarrollo.
 
 ---
 
-## Estado actual del repo (actualizado 2026-06-29)
+## Estado actual del repo (actualizado 2026-07-02)
 
 | Componente | Estado |
 |---|---|
@@ -206,7 +206,7 @@ creadas y verificadas en la base de desarrollo.
 | Integridad referencial (TP-3h) | **Completa** — 11 FKs, ningún huérfano (e1_p13) |
 | Metadata Etapa 2 (TP-5) | **Scripts creados; usuario reportó ejecución manual 2026-06-28** — `met_entidades`, `met_atributos`, `met_procesos`, `met_indicadores_calidad` (e2_p01/e2_p02). Re-ejecutar e2_p02 si se quiere refrescar Metadata con ajustes posteriores. |
 | Diseño DWA Etapa 2 (TP-6/7/8) | **Scripts creados, re-ejecutados manualmente y verificados 2026-06-28 21:35 UTC** — e2_p03 crea DWA/DWM/enriquecimiento con `dwa_dim_geography` y stock de producto; e2_p04 tiene 16 validaciones OK; e2_p05 conteo fact OK; e2_p06 perfila geografía + stock. Verificación: `dwa_dim_geography=102`, `dwa_fact_order_lines=2155`, `dwa_enr_customer_sales_metrics=89`, `dwa_enr_product_sales_metrics=77`. |
-| Etapa 3 (TP-9/10/11) | **Scripts creados 2026-06-29; pendiente ejecución manual** — e3_p01 a e3_p12. CSV corregido (`XXXXX→OLDWO`). Ver orden de ejecución arriba. Verificación esperada: `dwa_fact_order_lines>2155`, `dwm_customer_history (es_vigente=false)=2`, `dwm_product_history (es_vigente=false)=3`, `dwa_enr_customer_score=83`. |
+| Etapa 3 (TP-9/10/11) | **Ejecutada y verificada 2026-07-02 02:47-02:48 UTC** — e3_p01 a e3_p12 terminaron OK después de corregir `XXXXX→OLDWO`. Verificación: `dwa_fact_order_lines=2169`, `dwm_customer_history (es_vigente=false)=2`, `dwm_product_history (es_vigente=false)=3`, `dwa_enr_customer_score=83`, validaciones E3 OK y 0 afectadas. Pendiente: re-ejecutar `e3_p11_integrar_world_data` una vez por ajuste posterior de mapeo `MX→Mexico` e ISO `Ireland→IE`. |
 
 > Nota: la migración `9ea5f62ecfe7` se llama "dqm_tracking_models" pero crea las tablas de tracking (`Scripts`, `ScriptVersions`, `ScriptRuns`), no las de calidad de datos.
 

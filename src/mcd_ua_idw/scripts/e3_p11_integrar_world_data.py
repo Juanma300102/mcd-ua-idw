@@ -14,10 +14,16 @@ _DATA_DIR = Path(__file__).parents[3] / "data" / "ingesta2"
 # Mapeo de nombres de pais en Ingesta1/DWA → nombres en world-data-2023.csv
 # (D2 de decisiones de diseno Etapa 3)
 _PAIS_MAP = {
+    "MX": "Mexico",
     "UK": "United Kingdom",
     "USA": "United States",
     "Ireland": "Republic of Ireland",
-    # MX es un error de Ingesta1, ya mapea a Mexico en dwa_dim_geography
+}
+
+_ISO_FALLBACK = {
+    # world-data-2023 trae Abbreviation vacio para Republic of Ireland.
+    # Para tablero/mapas se registra el ISO-2 manual documentado.
+    "Ireland": "IE",
 }
 
 
@@ -33,11 +39,11 @@ def _leer_world_data() -> dict[str, dict]:
         reader = csv.DictReader(f)
         for row in reader:
             paises[row["Country"]] = {
-                "iso_code":  row.get("Abbreviation", "").strip(),
-                "capital":   row.get("Capital/Major City", "").strip(),
-                "language":  row.get("Official language", "").strip(),
-                "currency":  row.get("Currency-Code", "").strip(),
-                "latitude":  row.get("Latitude", "").strip(),
+                "iso_code": row.get("Abbreviation", "").strip(),
+                "capital": row.get("Capital/Major City", "").strip(),
+                "language": row.get("Official language", "").strip(),
+                "currency": row.get("Currency-Code", "").strip(),
+                "latitude": row.get("Latitude", "").strip(),
                 "longitude": row.get("Longitude", "").strip(),
             }
     return paises
@@ -85,47 +91,57 @@ async def run(session):
         lat = float(attrs["latitude"]) if attrs["latitude"] else None
         lon = float(attrs["longitude"]) if attrs["longitude"] else None
 
-        result = await session.execute(text(
-            "UPDATE dwa_dim_geography SET "
-            "country_iso_code = :iso, country_capital = :capital, "
-            "country_language = :lang, country_currency = :curr, "
-            "country_latitude = :lat, country_longitude = :lon "
-            "WHERE country = :dwa_country"
-        ), {
-            "iso": attrs["iso_code"] or None,
-            "capital": attrs["capital"] or None,
-            "lang": attrs["language"] or None,
-            "curr": attrs["currency"] or None,
-            "lat": lat,
-            "lon": lon,
-            "dwa_country": dwa_country,
-        })
+        result = await session.execute(
+            text(
+                "UPDATE dwa_dim_geography SET "
+                "country_iso_code = :iso, country_capital = :capital, "
+                "country_language = :lang, country_currency = :curr, "
+                "country_latitude = :lat, country_longitude = :lon "
+                "WHERE country = :dwa_country"
+            ),
+            {
+                "iso": attrs["iso_code"] or _ISO_FALLBACK.get(dwa_country),
+                "capital": attrs["capital"] or None,
+                "lang": attrs["language"] or None,
+                "curr": attrs["currency"] or None,
+                "lat": lat,
+                "lon": lon,
+                "dwa_country": dwa_country,
+            },
+        )
         actualizados += result.rowcount
 
     # 4. Registrar evento DQM
-    await session.execute(text(
-        "INSERT INTO dqm_eventos "
-        "(tabla, tipo_evento, nombre_script, fecha_inicio, fecha_fin, "
-        "registros_procesados, estado, observaciones) "
-        "VALUES ('dwa_dim_geography', 'ENRIQUECIMIENTO', :n, :fi, :ff, :rp, 'OK', :obs)"
-    ), {
-        "n": NAME,
-        "fi": t0,
-        "ff": _now(),
-        "rp": actualizados,
-        "obs": f"world-data-2023: {len(world)} paises en txt_world_data; {actualizados} filas de dwa_dim_geography enriquecidas",
-    })
+    await session.execute(
+        text(
+            "INSERT INTO dqm_eventos "
+            "(tabla, tipo_evento, nombre_script, fecha_inicio, fecha_fin, "
+            "registros_procesados, estado, observaciones) "
+            "VALUES ('dwa_dim_geography', 'ENRIQUECIMIENTO', :n, :fi, :ff, :rp, 'OK', :obs)"
+        ),
+        {
+            "n": NAME,
+            "fi": t0,
+            "ff": _now(),
+            "rp": actualizados,
+            "obs": f"world-data-2023: {len(world)} paises en txt_world_data; {actualizados} filas de dwa_dim_geography enriquecidas",
+        },
+    )
 
     # 5. Registrar entidad en MET_
-    exists = (await session.execute(text(
-        "SELECT 1 FROM met_entidades WHERE nombre = 'txt_world_data'"
-    ))).fetchone()
+    exists = (
+        await session.execute(
+            text("SELECT 1 FROM met_entidades WHERE nombre = 'txt_world_data'")
+        )
+    ).fetchone()
     if not exists:
-        await session.execute(text(
-            "INSERT INTO met_entidades (nombre, capa, tipo_entidad, descripcion, fuente, activa) "
-            "VALUES ('txt_world_data', 'TXT_NOV', 'TABLA', "
-            "'Datos de paises world-data-2023 en raw TEXT', 'world-data-2023.csv', 1)"
-        ))
+        await session.execute(
+            text(
+                "INSERT INTO met_entidades (nombre, capa, tipo_entidad, descripcion, fuente, activa) "
+                "VALUES ('txt_world_data', 'TXT_NOV', 'TABLA', "
+                "'Datos de paises world-data-2023 en raw TEXT', 'world-data-2023.csv', 1)"
+            )
+        )
 
     return {
         "paises_en_world_data": len(world),
