@@ -26,6 +26,23 @@ Adoptados según recomendación de la consigna (punto 17):
 - **Utilidades/test**: `util_<descripcion>` (ej. `util_db_check`)
 - Restricción técnica: los módulos Python no pueden empezar con dígito, por eso se usa letra prefix.
 
+### Agrupación visual en la TUI de scripts
+
+La TUI `uv run idw-scripts` usa un árbol de navegación agrupado por prefijo del
+módulo:
+
+- `e<number>_` → `Etapa <number>` (ordenadas numéricamente)
+- `util_` → `Utilidades`
+- otros prefijos con guion bajo → etiqueta amigable title-case del prefijo
+- sin prefijo reconocible → `Otros`
+
+Los grupos se muestran colapsados por defecto y se expanden/contraen desde la
+propia TUI, para evitar desplegar todos los scripts a la vez.
+
+**Motivo**: el listado plano ya no escala bien con las 4 etapas del TP y las
+utilidades. La agrupación mejora la lectura sin cambiar el contrato de
+descubrimiento ni el orden manual de ejecución documentado en `CLAUDE.md`.
+
 ### Nombres de columnas en base de datos
 - Siempre snake_case (ej. `category_id`, `company_name`).
 - El mapeo desde los nombres camelCase de los CSVs (ej. `categoryID` → `category_id`) se hace explícitamente en el script Python de carga, no en SQL.

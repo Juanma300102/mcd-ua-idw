@@ -57,10 +57,13 @@ async def run(session: AsyncSession) -> dict: ...
 
 - **CLI real**: `uv run idw-scripts` (`pyproject.toml`:
   `idw-scripts = "mcd_ua_idw.script_runner.tui:main"`). Es una TUI
-  interactiva (Textual): lista los scripts que descubre `discover_scripts()`
-  y ejecuta el que el usuario selecciona con Enter. No corre todos
-  automáticamente, y no admite target puntual por nombre desde la
-  invocación.
+  interactiva (Textual): muestra en un árbol los scripts que descubre
+  `discover_scripts()`, agrupados por prefijo de módulo (`e<number>_` como
+  "Etapa N", `util_` como "Utilidades", otros prefijos como grupo propio, y
+  sin prefijo como "Otros"). Los grupos arrancan colapsados para no mostrar la
+  lista completa de una vez; el usuario expande/contrae el grupo que necesita.
+  Ejecuta el script hoja que el usuario selecciona con Enter. No corre todos
+  automáticamente, y no admite target puntual por nombre desde la invocación.
 - **Scripts respaldados por SQL**: el `.sql` se co-ubica con un wrapper
   `.py` fino en `src/mcd_ua_idw/scripts/` (mismo nombre base, ej.
   `crear_tablas_dqm.sql` + `crear_tablas_dqm.py`). El wrapper sigue el
@@ -86,12 +89,11 @@ async def run(session: AsyncSession) -> dict: ...
 
 ## Orden de ejecución de scripts (checklist manual — actualizar con cada script nuevo)
 
-La TUI **no** respeta ningún orden de dependencias: lista lo que
-`discover_scripts()` encuentra vía `iter_modules`, en el orden que el
-discovery devuelva (no confirmado si es alfabético o de otro criterio —
-no asumir nada sobre el orden visual de la lista). Por eso, quien vaya a
-ejecutar scripts tiene que guiarse por este checklist y no por lo que
-muestra la pantalla.
+La TUI agrupa scripts por prefijo/etapa para facilitar la navegación, pero
+**no** representa un plan de dependencias ejecutable automáticamente. Dentro
+de cada grupo se ordena para lectura humana, pero quien vaya a ejecutar scripts
+tiene que guiarse por este checklist y no por asumir que el árbol visual
+define el flujo completo.
 
 **Orden actual (Etapas 1-3 completas + Etapa 4 scripts escritos, pendiente ejecución manual):**
 
