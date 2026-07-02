@@ -360,3 +360,75 @@ Columnas: `customer_key (FK)`, `customer_id`, `score (INTEGER)`, `fecha_carga`.
 **Motivo**: el score es un dato derivado/externo, no un atributo de identidad del cliente. Agregar una columna nullable a la dimensión agrega 8 NULLs estructuralmente y rompe la separación de concerns. El patrón `dwa_enr_*` ya existe en el modelo con el mismo criterio.
 
 **Alternativa descartada**: columna `customer_score INTEGER` en `dwa_dim_customer`. Descartada porque genera NULLs en la dimensión para clientes sin score y mezcla datos de identidad con datos de enriquecimiento externo.
+
+---
+
+## Etapa 4 — Publicación
+
+### D1 — Producto principal `dp01_ventas_geo_score`
+
+**Decisión**: publicar el producto de datos `dp01_ventas_geo_score` con prefijo
+`DPxx_`, orientado a analizar ventas por período mensual, geografía de envío y
+segmento de `customer_score`.
+
+**Grano**: 1 fila por (`anio`, `mes`, `ship_country`, `score_segment`).
+
+**Campos principales**:
+
+- período mensual (`periodo`)
+- país de envío y atributos de `world-data-2023.csv`
+- segmento de score: `alto_4_5`, `medio_2_3`, `bajo_0_1`, `sin_score`
+- clientes, órdenes, líneas, cantidad, ventas brutas, descuento, ventas netas y
+  venta neta promedio por orden
+
+**Motivo**: cumple el requisito de publicar un producto desde el DWA e incluye
+campos agregados en Ingesta2: `customer_score` y atributos geográficos externos.
+También queda directamente consumible por un tablero o por Power BI.
+
+### D2 — Producto DQM para navegación de calidad
+
+**Decisión**: publicar tres tablas `DPxx_` para navegar el DQM en tablero:
+
+| Tabla | Fuente | Grano |
+|---|---|---|
+| `dp02_dqm_validaciones_resumen` | `dqm_validaciones` | script + tabla + columna + chequeo + resultado |
+| `dp02_dqm_eventos_resumen` | `dqm_eventos` | script + tabla + tipo de evento + estado |
+| `dp02_dqm_perfilado_resumen` | `dqm_perfilado` | tabla perfilada |
+
+**Motivo**: el punto 13b de la consigna pide un tablero para navegar los datos
+persistidos en DQM. Publicar tablas DP02 evita que el tablero dependa de conocer
+el detalle interno de las tres tablas DQM.
+
+### D3 — Tableros HTML estáticos
+
+**Decisión**: generar dos tableros HTML estáticos en `DOCS/etapa4/`:
+
+- `tablero_dp01_ventas_geo_score.html`
+- `tablero_dp02_dqm.html`
+
+**Motivo**: la consigna da PBIX solo como ejemplo. Los ejemplos anteriores del
+repo mencionan tableros de forma conceptual, pero no traen un artefacto PBIX ni
+HTML reutilizable. HTML estático da una entrega visual y reproducible sin
+depender de Power BI; las tablas `DPxx_` quedan disponibles si luego se quiere
+armar un PBIX.
+
+### D4 — DQM y Metadata de publicación
+
+**Decisión**: Etapa 4 reutiliza las tres tablas DQM existentes:
+
+- `dqm_eventos` para huellas de publicación y generación de tableros
+- `dqm_validaciones` para controles de productos publicados
+- `dqm_perfilado` como fuente del tablero DQM
+
+Además se registran procesos, entidades, atributos e indicadores en `MET_*`.
+
+**Controles iniciales**:
+
+| tipo_chequeo | Regla |
+|---|---|
+| `DP01_NO_VACIO` | DP01 debe publicar al menos una fila |
+| `DP01_SCORE_ENRIQUECIDO` | DP01 debe incluir segmentos derivados de `customer_score` |
+| `DP01_GEOGRAFIA_ENRIQUECIDA` | DP01 debe tener geografía enriquecida mínima para tablero |
+| `DP01_MEDIDAS_VALIDAS` | medidas de DP01 deben ser positivas/no negativas según corresponda |
+| `DP02_NO_VACIO` | las tres tablas DP02 deben tener datos |
+| `DQM_SIN_ERRORES_PREVIOS` | no debe haber validaciones DQM previas en `ERROR` |

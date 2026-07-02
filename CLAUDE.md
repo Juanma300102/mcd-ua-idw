@@ -93,7 +93,7 @@ no asumir nada sobre el orden visual de la lista). Por eso, quien vaya a
 ejecutar scripts tiene que guiarse por este checklist y no por lo que
 muestra la pantalla.
 
-**Orden actual (Etapa 1 y 2 completas + Etapa 3 scripts escritos, pendiente ejecución 2026-06-29):**
+**Orden actual (Etapas 1-3 completas + Etapa 4 scripts escritos, pendiente ejecución manual):**
 
  1. `e0_p01_crear_tablas_dqm` — prerequisito absoluto; crea las 3 tablas DQM
  2. `e1_p01_crear_tablas_txt_sin_deps`
@@ -127,6 +127,11 @@ muestra la pantalla.
 30. `e3_p10_actualizar_dqm_metadata` — TP-9i/9j; registra procesos Etapa 3 en MET_
 31. `e3_p11_integrar_world_data` — TP-10; enriquece dwa_dim_geography con 6 atributos de país. Re-ejecutar una vez para aplicar mapeo final `MX→Mexico` e ISO fallback `Ireland→IE`.
 32. `e3_p12_integrar_customer_score` — TP-11; crea dwa_enr_customer_score con 83 scores
+33. `e4_p01_crear_tablas_publicacion` — TP-12/13; crea tablas `DPxx_` para publicación y tablero DQM
+34. `e4_p02_cargar_productos_publicacion` — TP-12; carga `dp01_ventas_geo_score` y resúmenes `dp02_dqm_*`
+35. `e4_p03_validar_productos_publicacion` — TP-12/13; valida productos publicados y deja huella en DQM
+36. `e4_p04_documentar_metadata_publicacion` — TP-12/13; registra Etapa 4 en Metadata
+37. `e4_p05_generar_tableros_html` — TP-13; genera tableros HTML en `DOCS/etapa4/`
 
 Utilidades (sin orden de dependencia, ejecutar cuando se necesiten):
 - `util_db_check`
@@ -207,6 +212,7 @@ creadas y verificadas en la base de desarrollo.
 | Metadata Etapa 2 (TP-5) | **Scripts creados; usuario reportó ejecución manual 2026-06-28** — `met_entidades`, `met_atributos`, `met_procesos`, `met_indicadores_calidad` (e2_p01/e2_p02). Re-ejecutar e2_p02 si se quiere refrescar Metadata con ajustes posteriores. |
 | Diseño DWA Etapa 2 (TP-6/7/8) | **Scripts creados, re-ejecutados manualmente y verificados 2026-06-28 21:35 UTC** — e2_p03 crea DWA/DWM/enriquecimiento con `dwa_dim_geography` y stock de producto; e2_p04 tiene 16 validaciones OK; e2_p05 conteo fact OK; e2_p06 perfila geografía + stock. Verificación: `dwa_dim_geography=102`, `dwa_fact_order_lines=2155`, `dwa_enr_customer_sales_metrics=89`, `dwa_enr_product_sales_metrics=77`. |
 | Etapa 3 (TP-9/10/11) | **Ejecutada y verificada 2026-07-02 02:47-02:48 UTC** — e3_p01 a e3_p12 terminaron OK después de corregir `XXXXX→OLDWO`. Verificación: `dwa_fact_order_lines=2169`, `dwm_customer_history (es_vigente=false)=2`, `dwm_product_history (es_vigente=false)=3`, `dwa_enr_customer_score=83`, validaciones E3 OK y 0 afectadas. Pendiente: re-ejecutar `e3_p11_integrar_world_data` una vez por ajuste posterior de mapeo `MX→Mexico` e ISO `Ireland→IE`. |
+| Etapa 4 (TP-12/13) | **Scripts y docs creados; pendiente ejecución manual** — publica `dp01_ventas_geo_score`, resúmenes `dp02_dqm_*`, validaciones DQM, Metadata y tableros HTML en `DOCS/etapa4/`. |
 
 > Nota: la migración `9ea5f62ecfe7` se llama "dqm_tracking_models" pero crea las tablas de tracking (`Scripts`, `ScriptVersions`, `ScriptRuns`), no las de calidad de datos.
 

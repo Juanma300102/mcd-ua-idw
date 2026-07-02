@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DP01 — Ventas por geografía y score</title>
+  <style>
+    body { font-family: Inter, Arial, sans-serif; margin: 32px; color: #162033; background: #f7f9fc; }
+    header { margin-bottom: 24px; }
+    h1 { margin: 0 0 8px; color: #163b73; }
+    h2 { margin-top: 28px; color: #163b73; }
+    .subtitle { color: #52627a; margin: 0; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+    .card { background: white; border: 1px solid #dce5f2; border-radius: 12px; padding: 16px; box-shadow: 0 1px 4px rgba(22,32,51,.06); }
+    .metric { font-size: 26px; font-weight: 700; color: #0f766e; }
+    table { border-collapse: collapse; width: 100%; background: white; border-radius: 12px; overflow: hidden; }
+    th, td { border-bottom: 1px solid #e7edf5; padding: 10px 12px; text-align: left; }
+    th { background: #eaf1fb; color: #163b73; font-size: 13px; }
+    .bar-row { display: grid; grid-template-columns: 180px 1fr 140px; gap: 12px; align-items: center; margin: 10px 0; }
+    .bar { background: #e5eaf3; height: 16px; border-radius: 999px; overflow: hidden; }
+    .bar i { display: block; height: 100%; background: linear-gradient(90deg, #2563eb, #0f766e); }
+    .chart-card { background: white; border: 1px solid #dce5f2; border-radius: 12px; padding: 16px; }
+    .line-chart { width: 100%; height: auto; }
+    .line-chart .axis { stroke: #90a4c3; stroke-width: 1; }
+    .line-chart polyline { fill: none; stroke: #2563eb; stroke-width: 3; }
+    .line-chart circle { fill: #0f766e; stroke: white; stroke-width: 2; cursor: help; }
+    .line-chart text { fill: #52627a; font-size: 12px; }
+    .chart-note { color: #52627a; font-size: 13px; margin: 8px 0 0; }
+    footer { margin-top: 32px; color: #52627a; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>DP01 — Ventas por geografía y score</h1>
+    <p class="subtitle">Producto de datos publicado desde DWA, world-data-2023 y customer_score.</p>
+  </header>
+
+<section class="grid">
+  <div class="card"><div class="metric">470</div><div>filas DP</div></div>
+  <div class="card"><div class="metric">21</div><div>países</div></div>
+  <div class="card"><div class="metric">836</div><div>órdenes</div></div>
+  <div class="card"><div class="metric">$1,270,678.24</div><div>venta neta</div></div>
+</section>
+<h2>Top países por venta neta</h2>
+<div class="bar-row"><span>USA</span><div class="bar"><i style="width:100%"></i></div><strong>$246,995.61</strong></div><div class="bar-row"><span>Germany</span><div class="bar"><i style="width:93%"></i></div><strong>$230,284.63</strong></div><div class="bar-row"><span>Austria</span><div class="bar"><i style="width:51%"></i></div><strong>$128,003.84</strong></div><div class="bar-row"><span>Brazil</span><div class="bar"><i style="width:43%"></i></div><strong>$107,668.18</strong></div><div class="bar-row"><span>France</span><div class="bar"><i style="width:32%"></i></div><strong>$81,358.32</strong></div><div class="bar-row"><span>UK</span><div class="bar"><i style="width:23%"></i></div><strong>$58,971.31</strong></div><div class="bar-row"><span>Venezuela</span><div class="bar"><i style="width:23%"></i></div><strong>$57,662.63</strong></div><div class="bar-row"><span>Sweden</span><div class="bar"><i style="width:22%"></i></div><strong>$54,495.14</strong></div><div class="bar-row"><span>Canada</span><div class="bar"><i style="width:20%"></i></div><strong>$50,383.29</strong></div><div class="bar-row"><span>Ireland</span><div class="bar"><i style="width:20%"></i></div><strong>$49,979.90</strong></div>
+<h2>Segmentos de score</h2>
+<table><thead><tr><th>Segmento</th><th>Órdenes</th><th>Venta neta</th></tr></thead><tbody><tr><td>Alto (4-5)</td><td>130</td><td>177,949.10</td></tr><tr><td>Medio (2-3)</td><td>484</td><td>833,020.06</td></tr><tr><td>Bajo (0-1)</td><td>147</td><td>149,634.43</td></tr><tr><td>Sin score</td><td>75</td><td>110,074.64</td></tr></tbody></table>
+<h2>Evolución mensual</h2>
+<div class="chart-card"><svg class="line-chart" viewBox="0 0 920 320" role="img" aria-label="Evolucion mensual de venta neta"><line class="axis" x1="72" y1="266" x2="892" y2="266" /><line class="axis" x1="72" y1="24" x2="72" y2="266" /><text x="62" y="30" text-anchor="end">$123,798.68</text><text x="62" y="266" text-anchor="end">$0</text><polyline points="72.00,211.54 109.27,216.18 146.55,214.43 183.82,192.66 221.09,176.86 258.36,177.57 295.64,146.25 332.91,190.77 370.18,190.65 407.45,162.33 444.73,160.87 482.00,194.92 519.27,166.27 556.55,173.56 593.82,157.26 631.09,135.52 668.36,180.90 705.64,126.43 742.91,72.27 780.18,71.66 817.45,61.03 854.73,24.00 892.00,230.16" /><circle cx="72.00" cy="211.54" r="5"><title>1996-07: $27,861.90 de venta neta; 22 ordenes</title></circle><circle cx="109.27" cy="216.18" r="5"><title>1996-08: $25,485.28 de venta neta; 25 ordenes</title></circle><circle cx="146.55" cy="214.43" r="5"><title>1996-09: $26,381.40 de venta neta; 23 ordenes</title></circle><circle cx="183.82" cy="192.66" r="5"><title>1996-10: $37,515.72 de venta neta; 26 ordenes</title></circle><circle cx="221.09" cy="176.86" r="5"><title>1996-11: $45,600.04 de venta neta; 25 ordenes</title></circle><circle cx="258.36" cy="177.57" r="5"><title>1996-12: $45,239.63 de venta neta; 31 ordenes</title></circle><circle cx="295.64" cy="146.25" r="5"><title>1997-01: $61,258.07 de venta neta; 33 ordenes</title></circle><circle cx="332.91" cy="190.77" r="5"><title>1997-02: $38,483.64 de venta neta; 29 ordenes</title></circle><circle cx="370.18" cy="190.65" r="5"><title>1997-03: $38,547.22 de venta neta; 30 ordenes</title></circle><circle cx="407.45" cy="162.33" r="5"><title>1997-04: $53,032.95 de venta neta; 31 ordenes</title></circle><circle cx="444.73" cy="160.87" r="5"><title>1997-05: $53,781.29 de venta neta; 32 ordenes</title></circle><circle cx="482.00" cy="194.92" r="5"><title>1997-06: $36,362.80 de venta neta; 30 ordenes</title></circle><circle cx="519.27" cy="166.27" r="5"><title>1997-07: $51,020.86 de venta neta; 33 ordenes</title></circle><circle cx="556.55" cy="173.56" r="5"><title>1997-08: $47,287.67 de venta neta; 33 ordenes</title></circle><circle cx="593.82" cy="157.26" r="5"><title>1997-09: $55,629.24 de venta neta; 37 ordenes</title></circle><circle cx="631.09" cy="135.52" r="5"><title>1997-10: $66,749.23 de venta neta; 38 ordenes</title></circle><circle cx="668.36" cy="180.90" r="5"><title>1997-11: $43,533.81 de venta neta; 34 ordenes</title></circle><circle cx="705.64" cy="126.43" r="5"><title>1997-12: $71,398.43 de venta neta; 48 ordenes</title></circle><circle cx="742.91" cy="72.27" r="5"><title>1998-01: $99,107.31 de venta neta; 61 ordenes</title></circle><circle cx="780.18" cy="71.66" r="5"><title>1998-02: $99,415.29 de venta neta; 54 ordenes</title></circle><circle cx="817.45" cy="61.03" r="5"><title>1998-03: $104,854.16 de venta neta; 73 ordenes</title></circle><circle cx="854.73" cy="24.00" r="5"><title>1998-04: $123,798.68 de venta neta; 74 ordenes</title></circle><circle cx="892.00" cy="230.16" r="5"><title>1998-05: $18,333.63 de venta neta; 14 ordenes</title></circle><text x="72.00" y="302" text-anchor="middle">1996-07</text><text x="183.82" y="302" text-anchor="middle">1996-10</text><text x="295.64" y="302" text-anchor="middle">1997-01</text><text x="407.45" y="302" text-anchor="middle">1997-04</text><text x="519.27" y="302" text-anchor="middle">1997-07</text><text x="631.09" y="302" text-anchor="middle">1997-10</text><text x="742.91" y="302" text-anchor="middle">1998-01</text><text x="854.73" y="302" text-anchor="middle">1998-04</text><text x="892.00" y="302" text-anchor="middle">1998-05</text></svg><p class="chart-note">Cada punto muestra la venta neta mensual; pasar el mouse por un punto muestra también la cantidad de órdenes.</p></div>
+
+  <footer>Generado por e4_p05_generar_tableros_html — 2026-07-02 14:06:14</footer>
+</body>
+</html>

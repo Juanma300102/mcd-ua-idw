@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DP02 — Tablero de calidad DQM</title>
+  <style>
+    body { font-family: Inter, Arial, sans-serif; margin: 32px; color: #162033; background: #f7f9fc; }
+    header { margin-bottom: 24px; }
+    h1 { margin: 0 0 8px; color: #163b73; }
+    h2 { margin-top: 28px; color: #163b73; }
+    .subtitle { color: #52627a; margin: 0; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+    .card { background: white; border: 1px solid #dce5f2; border-radius: 12px; padding: 16px; box-shadow: 0 1px 4px rgba(22,32,51,.06); }
+    .metric { font-size: 26px; font-weight: 700; color: #0f766e; }
+    table { border-collapse: collapse; width: 100%; background: white; border-radius: 12px; overflow: hidden; }
+    th, td { border-bottom: 1px solid #e7edf5; padding: 10px 12px; text-align: left; }
+    th { background: #eaf1fb; color: #163b73; font-size: 13px; }
+    .bar-row { display: grid; grid-template-columns: 180px 1fr 140px; gap: 12px; align-items: center; margin: 10px 0; }
+    .bar { background: #e5eaf3; height: 16px; border-radius: 999px; overflow: hidden; }
+    .bar i { display: block; height: 100%; background: linear-gradient(90deg, #2563eb, #0f766e); }
+    .chart-card { background: white; border: 1px solid #dce5f2; border-radius: 12px; padding: 16px; }
+    .line-chart { width: 100%; height: auto; }
+    .line-chart .axis { stroke: #90a4c3; stroke-width: 1; }
+    .line-chart polyline { fill: none; stroke: #2563eb; stroke-width: 3; }
+    .line-chart circle { fill: #0f766e; stroke: white; stroke-width: 2; cursor: help; }
+    .line-chart text { fill: #52627a; font-size: 12px; }
+    .chart-note { color: #52627a; font-size: 13px; margin: 8px 0 0; }
+    footer { margin-top: 32px; color: #52627a; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>DP02 — Tablero de calidad DQM</h1>
+    <p class="subtitle">Vista navegable de validaciones, eventos y perfilado persistidos en DQM.</p>
+  </header>
+
+<h2>Estado de validaciones</h2>
+<table><thead><tr><th>Resultado</th><th>Checks</th><th>Registros afectados</th></tr></thead><tbody><tr><td>OK</td><td>6</td><td>0</td></tr></tbody></table>
+<h2>Eventos de proceso</h2>
+<table><thead><tr><th>Estado</th><th>Eventos</th><th>Registros procesados</th></tr></thead><tbody><tr><td>OK</td><td>10</td><td>1163</td></tr></tbody></table>
+<h2>Tablas con mayor volumen perfilado</h2>
+<table><thead><tr><th>Tabla</th><th>Columnas</th><th>Filas máx.</th><th>Nulos</th><th>Outliers</th></tr></thead><tbody><tr><td>sin_perfilado_disponible</td><td>0</td><td>0</td><td>0</td><td>0</td></tr></tbody></table>
+<h2>Validaciones recientes</h2>
+<table><thead><tr><th>Script</th><th>Tabla</th><th>Chequeo</th><th>Resultado</th><th>Afectados</th><th>Última fecha</th></tr></thead><tbody><tr><td>e4_p03_validar_productos_publicacion</td><td>dp01_ventas_geo_score</td><td>DP01_GEOGRAFIA_ENRIQUECIDA</td><td>OK</td><td>0</td><td>2026-07-02 14:06:12.461051</td></tr><tr><td>e4_p03_validar_productos_publicacion</td><td>dp01_ventas_geo_score</td><td>DP01_MEDIDAS_VALIDAS</td><td>OK</td><td>0</td><td>2026-07-02 14:06:12.461051</td></tr><tr><td>e4_p03_validar_productos_publicacion</td><td>dp01_ventas_geo_score</td><td>DP01_SCORE_ENRIQUECIDO</td><td>OK</td><td>0</td><td>2026-07-02 14:06:12.461051</td></tr><tr><td>e4_p03_validar_productos_publicacion</td><td>dp01_ventas_geo_score</td><td>DP01_NO_VACIO</td><td>OK</td><td>0</td><td>2026-07-02 14:06:12.461051</td></tr><tr><td>e4_p03_validar_productos_publicacion</td><td>dp02_dqm_*</td><td>DP02_NO_VACIO</td><td>OK</td><td>0</td><td>2026-07-02 14:06:12.461051</td></tr><tr><td>e4_p03_validar_productos_publicacion</td><td>dqm_validaciones</td><td>DQM_SIN_ERRORES_PREVIOS</td><td>OK</td><td>0</td><td>2026-07-02 14:06:12.461051</td></tr></tbody></table>
+
+  <footer>Generado por e4_p05_generar_tableros_html — 2026-07-02 14:06:14</footer>
+</body>
+</html>
